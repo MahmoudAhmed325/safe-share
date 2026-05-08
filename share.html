@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SAFE - موقع الطفل</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:sans-serif;background:#0F172A;height:100vh;display:flex;flex-direction:column;color:#fff}
+    .header{background:#1A2E4C;padding:14px 18px;display:flex;align-items:center;gap:12px;border-bottom:2px solid #D9B969}
+    .title{color:#D9B969;font-size:17px;font-weight:bold}
+    .sub{color:#94A3B8;font-size:12px;margin-top:2px}
+    #map{flex:1}
+    .btn{display:block;width:calc(100% - 32px);margin:10px 16px;background:#D9B969;
+         color:#0F172A;text-align:center;padding:12px;border-radius:14px;
+         text-decoration:none;font-weight:bold;font-size:15px}
+    .footer{background:#1A2E4C;padding:10px 18px;display:flex;align-items:center;justify-content:space-between}
+    .time{color:#94A3B8;font-size:12px}
+    .badge{background:#10B981;color:#fff;font-size:11px;padding:4px 10px;border-radius:20px}
+    .error{display:flex;flex-direction:column;align-items:center;justify-content:center;
+           height:100vh;gap:16px;text-align:center;padding:24px}
+    .error h2{color:#D9B969;font-size:20px}
+    .error p{color:#94A3B8;font-size:14px}
+  </style>
+</head>
+<body>
+<script>
+  const SUPABASE_URL = "https://zjvyxzddqdakboqchvjk.supabase.co";
+  const SUPABASE_ANON = "sb_publishable_I95gbhwsFCvQAndaKzETBg_9L6-CCVs";
+
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  if (!token) {
+    document.body.innerHTML = '<div class="error"><h2>رابط غير صالح</h2><p>لا يوجد token في الرابط</p></div>';
+  } else {
+    init();
+  }
+
+  async function init() {
+    const res = await fetch(SUPABASE_URL + "/rest/v1/rpc/public_get_child_location", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
+      body: JSON.stringify({ p_token: token })
+    });
+    const arr = await res.json();
+
+    if (!arr || arr.length === 0) {
+      document.body.innerHTML = '<div class="error"><h2>رابط غير صالح</h2></div>';
+      return;
+    }
+
+    const row = arr[0];
+
+    if (row.expired) {
+      document.body.innerHTML = '<div class="error"><h2>🔒 انتهت صلاحية الرابط</h2><p>اطلب من الأب مشاركة رابط جديد</p></div>';
+      return;
+    }
+
+    buildUI(row);
+  }
+
+  function buildUI(row) {
+    document.body.innerHTML = `
+      <div class="header">
+        <div>
+          <div class="title">🛡️ موقع ${row.child_name}</div>
+          <div class="sub">يتحدث كل 30 ثانية تلقائياً</div>
+        </div>
+      </div>
+      <div id="map"></div>
+      <a class="btn" id="mapsBtn" href="https://www.google.com/maps?q=${row.lat},${row.lng}" target="_blank">
+        📍 افتح في Google Maps
+      </a>
+      <div class="footer">
+        <span class="time" id="timeLabel">-</span>
+        <span class="badge" id="badge">● مباشر</span>
+      </div>`;
+
+    const map = L.map("map").setView([row.lat, row.lng], 16);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+
+    const icon = L.divIcon({
+      html: '<div style="font-size:36px;line-height:1">🧒</div>',
+      iconSize: [40, 40], iconAnchor: [20, 40], className: ""
+    });
+    let marker = L.marker([row.lat, row.lng], { icon }).addTo(map);
+    let circle  = L.circle([row.lat, row.lng], { radius: 40, color: "#D9B969", fillOpacity: 0.2 }).addTo(map);
+
+    updateTime(row.captured_at);
+
+    setInterval(async () => {
+      try {
+        const r2 = await fetch(SUPABASE_URL + "/rest/v1/rpc/public_get_child_location", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON },
+          body: JSON.stringify({ p_token: token })
+        });
+        const a2 = await r2.json();
+        if (!a2 || !a2[0]) return;
+        const d = a2[0];
+        if (d.expired) { document.body.innerHTML = '<div class="error"><h2>🔒 انتهت الصلاحية</h2></div>'; return; }
+        marker.setLatLng([d.lat, d.lng]);
+        circle.setLatLng([d.lat, d.lng]);
+        document.getElementById("mapsBtn").href = `https://www.google.com/maps?q=${d.lat},${d.lng}`;
+        updateTime(d.captured_at);
+        document.getElementById("badge").textContent = "✅ محدّث";
+        setTimeout(() => { document.getElementById("badge").textContent = "● مباشر"; }, 2000);
+      } catch(e) { console.error(e); }
+    }, 30000);
+  }
+
+  function updateTime(ts) {
+    const t = new Date(ts).toLocaleTimeString("ar-EG", {
+      hour: "2-digit", minute: "2-digit", hour12: true
+    });
+    document.getElementById("timeLabel").textContent = "آخر تحديث: " + t;
+  }
+</script>
+</body>
+</html>
