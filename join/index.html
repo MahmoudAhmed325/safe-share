@@ -105,11 +105,10 @@
     document.getElementById('btnOpen').href =
       'https://mahmoudahmed325.github.io/safe-share/join?co_token=' + token;
 
-    // محاولة فتح التطبيق تلقائياً بعد ثانية
+// محاولة فتح التطبيق تلقائياً عبر Custom Scheme
     if (token) {
       setTimeout(() => {
-        window.location.href =
-          'https://mahmoudahmed325.github.io/safe-share/join?co_token=' + token;
+        window.location.href = 'safe://join?co_token=' + token;
       }, 800);
     }
   </script>
