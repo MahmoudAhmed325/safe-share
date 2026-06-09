@@ -73,8 +73,8 @@
 <body>
   <div class="card">
         <img src="../logo_safe.png"
-         style="width:140px; height:auto; max-height:80px; object-fit:contain; margin-bottom:16px; display:block; margin-left:auto; margin-right:auto;"
-         alt="SAFE"/>
+          style="width:130px; height:130px; object-fit:contain; margin-bottom:16px; display:block; margin-left:auto; margin-right:auto;"
+          alt="SAFE"/>
     <h1>دعوة مراقبة SAFE</h1>
     <p class="sub">تمت دعوتك لمراقبة طفل عبر تطبيق SAFE</p>
 
@@ -96,21 +96,24 @@
       4. الصق التوكن أعلاه
     </div>
   </div>
-
-  <script>
+<script>
     const params = new URLSearchParams(window.location.search);
     const token  = params.get('co_token') || '';
 
     document.getElementById('tokenBox').textContent = token || 'توكن غير موجود';
-    document.getElementById('btnOpen').href =
-      'https://mahmoudahmed325.github.io/safe-share/join?co_token=' + token;
 
-// محاولة فتح التطبيق تلقائياً عبر Custom Scheme
-    if (token) {
+    // زر الفتح يستخدم Custom Scheme فقط
+    document.getElementById('btnOpen').href =
+      token ? 'safe://join?co_token=' + token : '#';
+
+    // محاولة فتح التطبيق تلقائياً مرة واحدة فقط
+    if (token && !sessionStorage.getItem('tried')) {
+      sessionStorage.setItem('tried', '1');
       setTimeout(() => {
         window.location.href = 'safe://join?co_token=' + token;
       }, 800);
     }
   </script>
+
 </body>
 </html>
