@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAFE — قبول دعوة المراقبة</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      background: #0F172A;
+      color: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #1A2E4C;
+      border-radius: 20px;
+      padding: 36px 24px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      border: 1px solid #D9B96933;
+    }
+    .logo { font-size: 48px; margin-bottom: 12px; }
+    h1 { font-size: 22px; font-weight: bold; margin-bottom: 8px; color: #D9B969; }
+    .sub { font-size: 14px; color: #94A3B8; margin-bottom: 28px; }
+    .token-box {
+      background: #0F172A;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #94A3B8;
+      word-break: break-all;
+      margin-bottom: 8px;
+      text-align: left;
+      direction: ltr;
+    }
+    .copy-hint { font-size: 12px; color: #64748B; margin-bottom: 28px; }
+    .btn-open {
+      display: block;
+      background: #D9B969;
+      color: #1A2E4C;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      text-decoration: none;
+      margin-bottom: 12px;
+    }
+    .btn-store {
+      display: block;
+      background: #1E3A5F;
+      color: #F8FAFC;
+      font-size: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      text-decoration: none;
+      border: 1px solid #D9B96944;
+    }
+    .steps {
+      text-align: right;
+      margin-top: 28px;
+      font-size: 13px;
+      color: #64748B;
+      line-height: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🛡️</div>
+    <h1>دعوة مراقبة SAFE</h1>
+    <p class="sub">تمت دعوتك لمراقبة طفل عبر تطبيق SAFE</p>
+
+    <div class="token-box" id="tokenBox">جاري التحميل...</div>
+    <p class="copy-hint">انسخ التوكن إذا لم يفتح التطبيق تلقائياً</p>
+
+    <a class="btn-open" id="btnOpen" href="#">📱 فتح التطبيق</a>
+    <a class="btn-store"
+       href="https://play.google.com/store/apps/details?id=com.example.parentmonitor"
+       target="_blank">
+      ⬇️ تحميل SAFE من Play Store
+    </a>
+
+    <div class="steps">
+      <strong>إذا لم يفتح التطبيق تلقائياً:</strong><br>
+      1. حمّل تطبيق SAFE من Play Store<br>
+      2. افتح التطبيق وسجّل دخولك<br>
+      3. اضغط "لديك دعوة مراقبة؟"<br>
+      4. الصق التوكن أعلاه
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const token  = params.get('co_token') || '';
+
+    document.getElementById('tokenBox').textContent = token || 'توكن غير موجود';
+    document.getElementById('btnOpen').href =
+      'https://mahmoudahmed325.github.io/safe-share/join?co_token=' + token;
+
+    // محاولة فتح التطبيق تلقائياً بعد ثانية
+    if (token) {
+      setTimeout(() => {
+        window.location.href =
+          'https://mahmoudahmed325.github.io/safe-share/join?co_token=' + token;
+      }, 800);
+    }
+  </script>
+</body>
+</html>
